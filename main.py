@@ -22,7 +22,7 @@ def main(cfg: DictConfig):
         size, scores, runtime = E.evaluate(n,k,c,timelimit)
 
         L.log(size, k, scores, runtime)
-        
+
     print("[info] Done.")
 
 

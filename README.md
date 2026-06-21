@@ -28,3 +28,7 @@ More specific: 5, 10, 20, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000
 
 ## Running Test
 - `python main.py`
+
+## Build a different test
+You can change the seed in `cfg/config.yaml` to get a brand new test.  
+Default seed: 42  

@@ -88,4 +88,3 @@ class Evaluator:
         print(f"    [ts] score: {score['TS']}")
 
         return n, score, runtime
-
