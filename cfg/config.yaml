@@ -1,0 +1,15 @@
+defaults:
+  - _self_
+
+path:
+  ROOT: .
+  DATA: ${path.ROOT}/data/
+  TEST: ${path.ROOT}/cfg/test/
+  RES: ${path.ROOT}/results/
+
+seed: 0
+only: null
+
+hydra:
+  job:
+    chdir: false

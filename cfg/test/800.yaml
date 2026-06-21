@@ -1,0 +1,6 @@
+name: 800
+n: 800
+k: 50
+min_edge: 1000
+max_edge: 10000
+timelimit: 290
