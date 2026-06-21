@@ -5,6 +5,28 @@
 
 This repo represented 7 different ways to deal with CBUS - Capacitated Single-Vehicle Pickup-Delivery Problem
 
+## Folder Structure
+
+```
+.
+├── assets
+│   └── ...                     # assets files
+├── cfg
+│   ├── config.yaml
+│   └── test
+│       └── ...                 # config for each test
+├── data
+│   └── ...
+│       └── task.inp            # test input for each folder
+├── main.py
+├── README.md
+├── requirements.txt
+├── src
+│   └── ...                     # algorithms code lies in here
+└── utils
+    └── ...                     # utils function
+```
+
 ## Algorithm
 
 - Ant Colony Optimization
@@ -15,10 +37,11 @@ This repo represented 7 different ways to deal with CBUS - Capacitated Single-Ve
 - Simulated Annealing
 - Tabu Search
 
-## Testing
+## Results
 
 We tested 7 algorithms on multiple size test range from 1 to 1000  
-More specific: 5, 10, 20, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000
+More specific: 5, 10, 20, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000  
+![Table1](./assets/Table1.png)  
 
 ## Installation
 
@@ -30,5 +53,7 @@ More specific: 5, 10, 20, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000
 - `python main.py`
 
 ## Build a different test
-You can change the seed in `cfg/config.yaml` to get a brand new test.  
+
+You can change the seed in `cfg/config.yaml` to set a new seed.  
+Then run `python utils/test_builder.py` to generate a new test.  
 Default seed: 42  
