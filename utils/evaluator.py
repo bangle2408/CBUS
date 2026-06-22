@@ -34,6 +34,9 @@ class Evaluator:
         return ans
 
     def evaluate(self, n, k, c, timelimit):
+        methods = ['ACO', 'ALNS', 'GA', 'GREEDY', 'HC', 'SA', 'TS']
+        best = 1<<60
+
         print(f"[eval] evaluating methods on input size {n}")
         score = defaultdict(float)
         runtime = defaultdict(float)
@@ -43,6 +46,7 @@ class Evaluator:
         end = time.time()
         runtime['ACO'] = f"{end - start:.4f}"
         score['ACO'] = self.calc_cost(c, aco[1])
+        best = min(best, score['ACO'])
         print(f"    [aco] score: {score['ACO']}")
 
         start = time.time()
@@ -50,6 +54,7 @@ class Evaluator:
         end = time.time()
         runtime['ALNS'] = f"{end - start:.4f}"
         score['ALNS'] = self.calc_cost(c, alns[1])
+        best = min(best, score['ALNS'])
         print(f"    [alns] score: {score['ALNS']}")
 
         start = time.time()
@@ -57,6 +62,7 @@ class Evaluator:
         end = time.time()
         runtime['GA'] = f"{end - start:.4f}"
         score['GA'] = self.calc_cost(c, ga[1])
+        best = min(best, score['GA'])
         print(f"    [ga] score: {score['GA']}")
 
         start = time.time()
@@ -64,6 +70,7 @@ class Evaluator:
         end = time.time()
         runtime['GREEDY'] = f"{end - start:.4f}"
         score['GREEDY'] = self.calc_cost(c, greedy[1])
+        best = min(best, score['GREEDY'])
         print(f"    [greedy] score: {score['GREEDY']}")
 
         start = time.time()
@@ -71,6 +78,7 @@ class Evaluator:
         end = time.time()
         runtime['HC'] = f"{end - start:.4f}"
         score['HC'] = self.calc_cost(c, hc[1])
+        best = min(best, score['HC'])
         print(f"    [hc] score: {score['HC']}")
 
         start = time.time()
@@ -78,6 +86,7 @@ class Evaluator:
         end = time.time()
         runtime['SA'] = f"{end - start:.4f}"
         score['SA'] = self.calc_cost(c, sa[1])
+        best = min(best, score['SA'])
         print(f"    [sa] score: {score['SA']}")
 
         start = time.time()
@@ -85,6 +94,11 @@ class Evaluator:
         end = time.time()
         runtime['TS'] = f"{end - start:.4f}"
         score['TS'] = self.calc_cost(c, ts[1])
+        best = min(best, score['TS'])
         print(f"    [ts] score: {score['TS']}")
+
+        for method in methods:
+            gap = 100*(score[method] - best)/score[method]
+            score[method] = round(gap, 4)
 
         return n, score, runtime
