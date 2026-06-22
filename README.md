@@ -29,6 +29,7 @@ This repo represented 7 different ways to deal with CBUS - Capacitated Single-Ve
 
 ## Algorithm
 
+### Heuristic and Meta-heuristic
 - Ant Colony Optimization
 - Adaptive Large Neighborhood Search
 - Genetic Algorithm
@@ -37,9 +38,14 @@ This repo represented 7 different ways to deal with CBUS - Capacitated Single-Ve
 - Simulated Annealing
 - Tabu Search
 
+### Exact Methods
+- Branch and Bound
+- Bitmask Dynamic Programming
+- CP-SAT using ortools
+
 ## Results
 
-We tested 7 algorithms on multiple size test range from 1 to 1000  
+We tested 7 algorithms (heuristic and meta-heuristic) on multiple size test range from 1 to 1000  
 More specific: 5, 10, 20, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000  
 
 Table 1. Score Relative Gaps(%) Comparison. Lower is better
