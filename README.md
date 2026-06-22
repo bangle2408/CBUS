@@ -41,6 +41,8 @@ This repo represented 7 different ways to deal with CBUS - Capacitated Single-Ve
 
 We tested 7 algorithms on multiple size test range from 1 to 1000  
 More specific: 5, 10, 20, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000  
+
+Table 1. Score Relative Gaps(%) Comparison. Lower is better
 ![Table1](./assets/Table1.png)  
 
 ## Installation
