@@ -1,4 +1,4 @@
-# CBUS mini project
+<h1 align=center>CBUS mini project</h1>
 
 > This is a mini project  
 > Course: Fundamentals of Optimization  
