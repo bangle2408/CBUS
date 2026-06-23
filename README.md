@@ -1,5 +1,6 @@
 <h1 align=center>CBUS mini project</h1>
 
+> [!NOTE]  
 > This is a mini project  
 > Course: Fundamentals of Optimization  
 
