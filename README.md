@@ -5,6 +5,10 @@
 
 This repo represented 7 different ways to deal with CBUS - Capacitated Single-Vehicle Pickup-Delivery Problem
 
+## Problem
+
+`1` bus with capacity `k` is used for transporting `n` passengers `1, 2, ..., n`. Each passenger `i` wants to travel from point `i` to point `i+n`. Passengers must be served such that the bus's load does not exceed the limit `k`. The bus starting from `0` served all passenger, then back to `0`.
+
 ## Folder Structure
 
 ```
@@ -48,20 +52,43 @@ This repo represented 7 different ways to deal with CBUS - Capacitated Single-Ve
 We tested 7 algorithms (heuristic and meta-heuristic) on multiple size test range from 1 to 1000  
 More specific: 5, 10, 20, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000  
 
-Table 1. Score Relative Gaps(%) Comparison. Lower is better
+<h3 align=center>Table 1. Score Relative Gaps(%) Comparison. Lower is better</h3>
+
 ![Table1](./assets/Table1.png)  
+
+<h3 align=center>Figure 1. Visualization of Table 1.</h3>
+
+![Figure1](./assets/relative_gaps.png)
 
 ## Installation
 
-- `python -m venv env`
-- `source env/bin/activate`
-- `pip install -r requirements.txt`
+Create a virtual enviroment:
+```
+python -m venv env
+```
+
+Activate it (for bash users):
+```
+source env/bin/activate
+```
+
+Install requirements:
+```
+pip install -r requirements.txt
+```
 
 ## Running Test
-- `python main.py`
+
+If you want to run the test by yourself, you can run:  
+```
+python main.py
+```
 
 ## Build a different test
 
-You can change the seed in `cfg/config.yaml` to set a new seed.  
-Then run `python utils/test_builder.py` to generate a new test.  
-Default seed: 42  
+Run:  
+```
+python utils/test_builder.py seed={newseed}
+``` 
+to generate a new test with `newseed` *without the brackets {}*.  
+Default seed: 0  
