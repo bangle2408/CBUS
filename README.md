@@ -50,16 +50,24 @@ This repo represented 7 different ways to deal with CBUS - Capacitated Single-Ve
 
 ## Results
 
-We tested 7 algorithms (heuristic and meta-heuristic) on multiple size test range from 1 to 1000  
-More specific: 5, 10, 20, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000  
+We tested 7 algorithms (heuristic and meta-heuristic) on multiple size test range from 3 to 1000  
+More specific: 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000  
 
-<h3 align=center>Table 1. Score Relative Gaps(%) Comparison. Lower is better</h3>
+<h3 align=center>Table 1. Score Relative Gaps(%) Comparison with small size instances. Lower is better</h3>
 
-![Table1](./assets/Table1.png)  
+![Table1](./assets/Table1.png)
 
 <h3 align=center>Figure 1. Visualization of Table 1.</h3>
 
-![Figure1](./assets/relative_gaps.png)
+![Figure1](./assets/relative_gaps_small_3_16.png)
+
+<h3 align=center>Table 2. Score Relative Gaps(%) Comparison between Heuristic / Meta-heuristic algorithms. Lower is better</h3>
+
+![Table2](./assets/Table2.png)  
+
+<h3 align=center>Figure 2. Visualization of Table 2.</h3>
+
+![Figure2](./assets/relative_gaps.png)
 
 ## Installation
 
