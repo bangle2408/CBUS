@@ -10,7 +10,7 @@ from utils.evaluator import Evaluator
 def main(cfg: DictConfig):
     L = Logger(cfg.path.RES)
     E = Evaluator()
-    test = [5,10,20,50,100,200,300,400,500,600,700,800,900,1000]
+    test = list(range(3,17)) + [20,50,100,200,300,400,500,600,700,800,900,1000]
 
     for t in test:
         path = Path(to_absolute_path(cfg.path.DATA)) / f"{t}" / "task.inp"

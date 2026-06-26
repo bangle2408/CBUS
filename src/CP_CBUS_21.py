@@ -1,3 +1,5 @@
+import time
+
 from ortools.sat.python import cp_model
 
 
@@ -7,7 +9,21 @@ class CP:
         self.k = k
         self.c = c
         self.N = 2 * n
-        self.timelimit = timelimit
+        self.timelimit = None if timelimit is None else float(timelimit)
+        self.start_time = time.time()
+
+    def remaining_time(self):
+        if self.timelimit is None:
+            return None
+
+        elapsed = time.time() - self.start_time
+        return max(0.0, self.timelimit - elapsed)
+
+    def is_tle(self):
+        return (
+            self.timelimit is not None
+            and time.time() - self.start_time >= self.timelimit
+        )
 
     def build_route(self, solver, x):
         route = []
@@ -34,6 +50,9 @@ class CP:
         return route
 
     def solve(self):
+        if self.is_tle():
+            return float("nan"), "TLE"
+
         model = cp_model.CpModel()
         m = max(2000, self.N + self.k + 5)
 
@@ -93,11 +112,20 @@ class CP:
         model.Minimize(cost)
 
         solver = cp_model.CpSolver()
-        if self.timelimit is not None:
-            solver.parameters.max_time_in_seconds = self.timelimit
+        time_left = self.remaining_time()
+        if time_left is not None:
+            if time_left <= 0:
+                return float("nan"), "TLE"
+
+            solver.parameters.max_time_in_seconds = time_left
 
         status = solver.Solve(model)
         if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+            if self.is_tle() or (
+                status == cp_model.UNKNOWN and self.timelimit is not None
+            ):
+                return float("nan"), "TLE"
+
             return self.n, []
 
         return self.n, self.build_route(solver, x)
@@ -108,6 +136,11 @@ def solve():
     c = [list(map(int, input().split())) for _ in range(2 * n + 1)]
 
     n, best_route = CP(n, k, c).solve()
+    if best_route == "TLE":
+        print(n)
+        print(best_route)
+        return
+
     if not best_route:
         print("No solution")
         return

@@ -1,8 +1,13 @@
 import sys
+import time
+
+
+class TimeLimitExceeded(Exception):
+    pass
 
 
 class DP:
-    def __init__(self, n, k, c):
+    def __init__(self, n, k, c, timelimit=None):
         self.n = n
         self.k = k
         self.c = c
@@ -12,12 +17,27 @@ class DP:
         self.memo = {}
         self.choice = {}
 
+        self.start = time.time()
+        self.timelimit = None if timelimit is None else float(timelimit)
+
+    def is_tle(self):
+        return (
+            self.timelimit is not None
+            and time.time() - self.start >= self.timelimit
+        )
+
+    def check_time_limit(self):
+        if self.is_tle():
+            raise TimeLimitExceeded
+
     def get_load(self, mask):
         pickup_mask = mask & ((1 << self.n) - 1)
         delivery_mask = mask >> self.n
         return pickup_mask.bit_count() - delivery_mask.bit_count()
 
     def solve_state(self, cur, mask):
+        self.check_time_limit()
+
         if mask == self.full:
             return self.c[cur][0]
 
@@ -70,7 +90,11 @@ class DP:
 
     def solve(self):
         sys.setrecursionlimit(max(1000, self.N + 50))
-        self.solve_state(0, 0)
+        try:
+            self.solve_state(0, 0)
+        except TimeLimitExceeded:
+            return float("nan"), "TLE"
+
         return self.n, self.build_route()
 
 
@@ -82,6 +106,11 @@ def solve():
     c = [list(map(int, input().split())) for _ in range(2 * n + 1)]
 
     n, best_route = DP(n, k, c).solve()
+    if best_route == "TLE":
+        print(n)
+        print(best_route)
+        return
+
     print(n)
     print(*best_route)
 

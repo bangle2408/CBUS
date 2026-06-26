@@ -1,7 +1,11 @@
+import math
 import os
 import time
 from collections import defaultdict
 from omegaconf import DictConfig
+from src.BAB_CBUS_21 import BAB
+from src.DP_CBUS_21 import DP
+from src.CP_CBUS_21 import CP
 from src.ACO_CBUS_21 import ACO
 from src.ALNS_CBUS_21 import ALNS_SA
 from src.GA_CBUS_21 import GA
@@ -34,71 +38,60 @@ class Evaluator:
         return ans
 
     def evaluate(self, n, k, c, timelimit):
-        methods = ['ACO', 'ALNS', 'GA', 'GREEDY', 'HC', 'SA', 'TS']
-        best = 1<<60
+        methods = ["BAB", "DP", "CP", 'ACO', 'ALNS', 'GA', 'GREEDY', 'HC', 'SA', 'TS']
 
         print(f"[eval] evaluating methods on input size {n}")
         score = defaultdict(float)
         runtime = defaultdict(float)
 
-        start = time.time()
-        aco = ACO(n,k,c).solve()
-        end = time.time()
-        runtime['ACO'] = f"{end - start:.4f}"
-        score['ACO'] = self.calc_cost(c, aco[1])
-        best = min(best, score['ACO'])
-        print(f"    [aco] score: {score['ACO']}")
+        def evaluate_method(method, solver):
+            start = time.time()
+            _, route = solver.solve()
+            end = time.time()
 
-        start = time.time()
-        alns = ALNS_SA(n,k,c,timelimit = timelimit).solve()
-        end = time.time()
-        runtime['ALNS'] = f"{end - start:.4f}"
-        score['ALNS'] = self.calc_cost(c, alns[1])
-        best = min(best, score['ALNS'])
-        print(f"    [alns] score: {score['ALNS']}")
+            if route == "TLE":
+                score[method] = float("nan")
+                runtime[method] = "TLE"
+            elif not route:
+                score[method] = float("nan")
+                runtime[method] = f"{end - start:.4f}"
+            else:
+                score[method] = self.calc_cost(c, route)
+                runtime[method] = f"{end - start:.4f}"
 
-        start = time.time()
-        ga = GA(n,k,c,timelimit = timelimit).solve()
-        end = time.time()
-        runtime['GA'] = f"{end - start:.4f}"
-        score['GA'] = self.calc_cost(c, ga[1])
-        best = min(best, score['GA'])
-        print(f"    [ga] score: {score['GA']}")
+            print(f"    [{method.lower()}] score: {score[method]}")
 
-        start = time.time()
-        greedy = GREEDY(n,k,c).solve()
-        end = time.time()
-        runtime['GREEDY'] = f"{end - start:.4f}"
-        score['GREEDY'] = self.calc_cost(c, greedy[1])
-        best = min(best, score['GREEDY'])
-        print(f"    [greedy] score: {score['GREEDY']}")
+        evaluate_method("BAB", BAB(n, k, c, timelimit))
+        evaluate_method("DP", DP(n, k, c, timelimit))
+        evaluate_method("CP", CP(n, k, c, timelimit))
+        evaluate_method("ACO", ACO(n, k, c))
+        evaluate_method("ALNS", ALNS_SA(n, k, c, timelimit=timelimit))
+        evaluate_method("GA", GA(n, k, c, timelimit=timelimit))
+        evaluate_method("GREEDY", GREEDY(n, k, c))
+        evaluate_method("HC", HC(n, k, c))
+        evaluate_method("SA", SA(n, k, c, timelimit=timelimit))
+        evaluate_method("TS", TS(n, k, c))
 
-        start = time.time()
-        hc = HC(n,k,c).solve()
-        end = time.time()
-        runtime['HC'] = f"{end - start:.4f}"
-        score['HC'] = self.calc_cost(c, hc[1])
-        best = min(best, score['HC'])
-        print(f"    [hc] score: {score['HC']}")
+        valid_scores = [
+            score[method]
+            for method in methods
+            if math.isfinite(score[method])
+        ]
 
-        start = time.time()
-        sa = SA(n,k,c,timelimit = timelimit).solve()
-        end = time.time()
-        runtime['SA'] = f"{end - start:.4f}"
-        score['SA'] = self.calc_cost(c, sa[1])
-        best = min(best, score['SA'])
-        print(f"    [sa] score: {score['SA']}")
+        if not valid_scores:
+            return n, score, runtime
 
-        start = time.time()
-        ts = TS(n,k,c).solve()
-        end = time.time()
-        runtime['TS'] = f"{end - start:.4f}"
-        score['TS'] = self.calc_cost(c, ts[1])
-        best = min(best, score['TS'])
-        print(f"    [ts] score: {score['TS']}")
+        best = min(valid_scores)
 
         for method in methods:
-            gap = 100*(score[method] - best)/score[method]
-            score[method] = round(gap, 4)
+            if not math.isfinite(score[method]):
+                score[method] = float("nan")
+                continue
+
+            if best == 0:
+                score[method] = 0.0 if score[method] == 0 else float("inf")
+            else:
+                gap = 100 * (score[method] - best) / best
+                score[method] = round(gap, 4)
 
         return n, score, runtime

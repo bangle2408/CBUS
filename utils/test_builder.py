@@ -43,7 +43,7 @@ def main(cfg: DictConfig) -> None:
     data_dir = Path(to_absolute_path(cfg.path.DATA))
     config_dir = Path(to_absolute_path(cfg.path.TEST))
 
-    test = [5,10,20,50,100,200,300,400,500,600,700,800,900,1000]
+    test = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,20,50,100,200,300,400,500,600,700,800,900,1000]
 
     print(f"[seed] create test with seed {seed}")
     for t in test:

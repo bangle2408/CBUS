@@ -11,6 +11,9 @@ class Logger:
         record = {
             "size": size,
             "capacity": cap,
+            "BAB": (scores["BAB"], runtime["BAB"]),
+            "DP": (scores["DP"], runtime["DP"]),
+            "CP": (scores["CP"], runtime["CP"]),
             "Greedy": (scores["GREEDY"], runtime["GREEDY"]),
             "HC": (scores["HC"], runtime["HC"]),
             "ACO": (scores["ACO"], runtime["ACO"]),

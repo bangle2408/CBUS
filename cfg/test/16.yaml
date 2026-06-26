@@ -1,0 +1,6 @@
+name: 16
+n: 16
+k: 10
+min_edge: 1
+max_edge: 10
+timelimit: 20

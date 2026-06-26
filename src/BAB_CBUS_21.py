@@ -1,13 +1,20 @@
 import sys
+import time
+
+
+class TimeLimitExceeded(Exception):
+    pass
 
 
 class BAB:
-    def __init__(self, n, k, c):
+    def __init__(self, n, k, c, timelimit=None):
         self.n = n
         self.k = k
         self.c = c
         self.N = 2 * n
         self.INF = 10**18
+        self.start = time.time()
+        self.timelimit = None if timelimit is None else float(timelimit)
 
         self.best = self.INF
         self.best_route = []
@@ -15,6 +22,16 @@ class BAB:
         self.picked = [False] * (n + 1)
         self.delivered = [False] * (n + 1)
         self.min_edge = self.find_min_edge()
+
+    def is_tle(self):
+        return (
+            self.timelimit is not None
+            and time.time() - self.start >= self.timelimit
+        )
+
+    def check_time_limit(self):
+        if self.is_tle():
+            raise TimeLimitExceeded
 
     def find_min_edge(self):
         min_edge = self.INF
@@ -41,6 +58,7 @@ class BAB:
         load = 0
 
         while len(route) < self.N:
+            self.check_time_limit()
             candidates = []
 
             if load < self.k:
@@ -71,6 +89,8 @@ class BAB:
             self.best = self.calc_cost(route)
 
     def dfs(self, pos, served, load, cost):
+        self.check_time_limit()
+
         if served == self.N:
             total = cost + self.c[pos][0]
             if total < self.best:
@@ -117,8 +137,13 @@ class BAB:
 
     def solve(self):
         sys.setrecursionlimit(max(1000, self.N + 50))
-        self.greedy_upper_bound()
-        self.dfs(0, 0, 0, 0)
+        try:
+            self.check_time_limit()
+            self.greedy_upper_bound()
+            self.dfs(0, 0, 0, 0)
+        except TimeLimitExceeded:
+            return float("nan"), "TLE"
+
         return self.n, self.best_route
 
 
@@ -127,6 +152,11 @@ def solve():
     c = [list(map(int, input().split())) for _ in range(2 * n + 1)]
 
     n, best_route = BAB(n, k, c).solve()
+    if best_route == "TLE":
+        print(n)
+        print(best_route)
+        return
+
     print(n)
     print(*best_route)
 
