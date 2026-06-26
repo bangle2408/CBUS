@@ -120,7 +120,7 @@ class CP:
             solver.parameters.max_time_in_seconds = time_left
 
         status = solver.Solve(model)
-        if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        if status != cp_model.OPTIMAL:
             if self.is_tle() or (
                 status == cp_model.UNKNOWN and self.timelimit is not None
             ):

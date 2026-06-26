@@ -7,4 +7,4 @@ results/
 .src/
 .python-version
 __pycache__/
-tmp.py
+tmp/

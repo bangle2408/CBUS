@@ -1,6 +1,5 @@
 import sys,time,io,os
 import random
-from heapq import heapify, heappush, heappop
 
 INF = 1<<60
 
@@ -60,51 +59,50 @@ class GA:
             self.mutation_rate = 0.90
 
     def select(self, scored):
-        best_cost, best_gene = random.choice(scored)
+        best_cost, best_route = random.choice(scored)
 
         for _ in range(self.tournament_size-1):
-            cost, gene = random.choice(scored)
+            cost, route = random.choice(scored)
 
             if cost < best_cost:
                 best_cost = cost
-                best_gene = gene
+                best_route = route
 
-        return best_gene
+        return best_route
 
     def init_population(self):
         population = []
 
-        greedy_gene, greedy_cost = self.init_greedy_route()
-        population.append(greedy_gene)
-        self.best_gene = greedy_gene[:]
-        self.best_route = greedy_gene[:]
+        greedy_route, greedy_cost = self.init_greedy_route()
+        population.append(greedy_route)
+        self.best_route = greedy_route[:]
         self.best_cost = greedy_cost
 
-        greedy_varients = self.pop_size//3
-        for _ in range(greedy_varients):
-            gene = greedy_gene[:]
+        greedy_variants = self.pop_size//3
+        for _ in range(greedy_variants):
+            route = greedy_route[:]
             mutation_times = random.randint(1,5)
 
             for _ in range(mutation_times):
-                gene = self.mutate(gene)
+                route = self.mutate(route)
 
-            population.append(gene)
+            population.append(route)
 
         while len(population)<self.pop_size:
-            population.append(self.random_gene())
+            population.append(self.random_route())
 
         return population
 
-    def mutate(self, gene):
+    def mutate(self, route):
         r = random.random()
 
-        if r < 0.3: return self.swap_mutation(gene)
-        elif r < 0.55: return self.reverse_mutation(gene)
-        elif r < 0.8: return self.insert_mutation(gene)
-        else: return self.pair_mutation(gene)
+        if r < 0.30: return self.pair_relocate(route)
+        elif r < 0.50: return self.pair_swap(route)
+        elif r < 0.75: return self.pickup_relocate(route)
+        else: return self.delivery_relocate(route)
 
-    def mutate_many(self, gene):
-        new_gene = gene[:]
+    def mutate_many(self, route):
+        new_route = route[:]
         if self.n <= 100:
             times = random.randint(1,3)
 
@@ -115,185 +113,245 @@ class GA:
             times = random.randint(3, 8)
 
         for _ in range(times):
-            new_gene = self.mutate(new_gene)
+            new_route = self.mutate(new_route)
 
-        return new_gene
+        return new_route
         
-    def random_gene(self):
-        gene = list(range(1, self.n * 2 + 1))
-        random.shuffle(gene)
-        return gene
-
-    def evaluate(self, gene):    
-        if gene is None: return INF
-
-        route = self.decode_gene(gene)
-        if route is None: return INF
-
-        return self.calc_cost(route)
-
-    def insert_mutation(self, gene):
-        m = len(gene)
-        new_gene = gene[:]
-
-        i = random.randint(0,m-1)
-        node = new_gene.pop(i)
-        j = random.randint(0,m-2)
-        new_gene.insert(j, node)
-
-        return new_gene
-
-    def swap_mutation(self, gene):
-        m = len(gene)
-        new_gene = gene[:]
-
-        i,j = random.sample(range(m), 2)
-
-        new_gene[i], new_gene[j] = new_gene[j], new_gene[i]
-
-        return new_gene
-
-    def reverse_mutation(self, gene):
-        new_gene = gene[:]
-        m = len(gene)
-        
-        i,j = sorted(random.sample(range(m), 2))
-        new_gene[i:j+1] = new_gene[i:j+1][::-1]
-
-        return new_gene
-
-    def pair_mutation(self, gene):
-        pickup = random.randint(1, self.n)
-        delivery = pickup + self.n
-
-        base = [x for x in gene if x!=pickup and x!=delivery]
-        pos = random.randint(0,len(base))
-        new_gene = base[:pos] + [pickup,delivery] + base[pos:]
-        return new_gene
-
-    def crossover(self, gene1, gene2):
-        m = len(gene1)
-
-        left = random.randint(0, m-2)
-        right = random.randint(left+1, m-1)
-
-        child = [-1] * m
-        used = set()
-
-        for i in range(left, right+1):
-            child[i] = gene1[i]
-            used.add(gene1[i])
-
-        idx = (right + 1)%m
-        for j in range(m):
-            node = gene2[(right+1+j)%m]
-            if node in used: continue
-            used.add(node)
-            child[idx] = node
-            idx = (idx+1)%m
-
-        return child
-
-    def decode_gene(self, gene):
-        if gene is None: return None
-
-        if len(gene) != self.n * 2: return None 
-
-        rank = [0] * (self.n * 2 +1)
-        seen = [0] * (self.n * 2 +1)
-        
-        for i,node in enumerate(gene):
-            if node < 1 or node > 2*self.n:
-                return None
-            if seen[node]: return None
-            seen[node] = 1
-            rank[node] = i
-
-        pickupheap = []
-        deliveryheap = []
-
-        for pickup in range(1, self.n+1):
-            pickupheap.append((rank[pickup], pickup))
-        heapify(pickupheap)
-        heapify(deliveryheap)
-
+    def random_route(self):
+        remaining = list(range(1, self.n+1))
+        onbus = []
         route = []
         load = 0
 
         while len(route) < 2*self.n:
-            can_pickup = load < self.k and len(pickupheap) > 0
-            can_delivery = len(deliveryheap) > 0
+            can_pickup = load < self.k and len(remaining) > 0
+            can_delivery = len(onbus) > 0
+
+            if not can_pickup and not can_delivery:
+                greedy_route, _ = self.init_greedy_route()
+                return greedy_route
 
             if can_pickup and can_delivery:
-                if pickupheap[0][0] <= deliveryheap[0][0]:
-                    _,pickup = heappop(pickupheap)
+                pickup_weight = len(remaining)
+                delivery_weight = len(onbus)
+                choose_pickup = random.randint(1, pickup_weight + delivery_weight) <= pickup_weight
+            else:
+                choose_pickup = can_pickup
 
-                    route.append(pickup)
-                    load += 1
-
-                    delivery = pickup + self.n
-                    heappush(deliveryheap, (rank[delivery], delivery))
-                else:
-                    _, delivery = heappop(deliveryheap)
-
-                    route.append(delivery)
-                    load -= 1
-            elif can_pickup:
-                _,pickup = heappop(pickupheap)
+            if choose_pickup:
+                idx = random.randrange(len(remaining))
+                pickup = remaining[idx]
+                remaining[idx] = remaining[-1]
+                remaining.pop()
 
                 route.append(pickup)
+                onbus.append(pickup)
                 load += 1
+            else:
+                idx = random.randrange(len(onbus))
+                pickup = onbus[idx]
+                last_pickup = onbus[-1]
+                onbus[idx] = last_pickup
+                onbus.pop()
 
-                delivery = pickup + self.n
-                heappush(deliveryheap, (rank[delivery], delivery))
-            elif can_delivery:
-                _, delivery = heappop(deliveryheap)
-
-                route.append(delivery)
+                route.append(pickup + self.n)
                 load -= 1
-            else: return None
 
         return route
+
+    def evaluate(self, route):
+        if route is None or len(route) != 2*self.n: return INF
+        return self.calc_cost(route)
+
+    def request_id(self, node):
+        if node <= self.n:
+            return node
+        return node - self.n
+
+    def crossover(self, route1, route2):
+        if self.n <= 1:
+            return route1[:]
+
+        seen = [0] * (self.n+1)
+        request_order = []
+        for node in route1:
+            req = self.request_id(node)
+            if not seen[req]:
+                seen[req] = 1
+                request_order.append(req)
+
+        if len(request_order) != self.n:
+            return route1[:]
+
+        block_size = random.randint(1, self.n-1)
+        left = random.randint(0, self.n-block_size)
+        selected = set(request_order[left:left+block_size])
+
+        child = []
+        for node in route1:
+            if self.request_id(node) in selected:
+                child.append(node)
+        for node in route2:
+            if self.request_id(node) not in selected:
+                child.append(node)
+
+        if self.is_valid(child):
+            return child
+        return route1[:]
+
+    def pair_relocate(self, route, max_attempts = 20):
+        for _ in range(max_attempts):
+            pickup = random.randint(1,self.n)
+            delivery = pickup + self.n
+            base = [x for x in route if x!=pickup and x!=delivery]
+            L = len(base)
+
+            p = random.randint(0, L)
+            tmp = base[:p] + [pickup] + base[p:]
+            q = random.randint(p+1, L+1)
+            new_route = tmp[:q] + [delivery] + tmp[q:]
+
+            if self.is_valid(new_route):
+                return new_route
+        return route[:]
+
+    def pair_swap(self, route, max_attempts = 20):
+        if self.n <= 1:
+            return route[:]
+
+        for _ in range(max_attempts):
+            new_route = route[:]
+            a,b = random.sample(range(1, self.n+1), 2)
+
+            for idx, node in enumerate(route):
+                if node == a:
+                    new_route[idx] = b
+                elif node == b:
+                    new_route[idx] = a
+                elif node == a+self.n:
+                    new_route[idx] = b+self.n
+                elif node == b+self.n:
+                    new_route[idx] = a+self.n
+
+            if self.is_valid(new_route):
+                return new_route
+        return route[:]
+
+    def pickup_relocate(self, route, max_attempts = 20):
+        for _ in range(max_attempts):
+            pickup = random.randint(1,self.n)
+            delivery = pickup + self.n
+            base = []
+            delivery_pos = None
+
+            for node in route:
+                if node == pickup:
+                    continue
+                if node == delivery:
+                    delivery_pos = len(base)
+                base.append(node)
+
+            if delivery_pos is None:
+                continue
+
+            p = random.randint(0, delivery_pos)
+            new_route = base[:p] + [pickup] + base[p:]
+
+            if self.is_valid(new_route):
+                return new_route
+        return route[:]
+
+    def delivery_relocate(self, route, max_attempts = 20):
+        for _ in range(max_attempts):
+            delivery = random.randint(1,self.n) + self.n
+            pickup = delivery - self.n
+            base = []
+            pickup_pos = None
+
+            for node in route:
+                if node == delivery:
+                    continue
+                if node == pickup:
+                    pickup_pos = len(base)
+                base.append(node)
+
+            if pickup_pos is None:
+                continue
+
+            p = random.randint(pickup_pos+1, len(base))
+            new_route = base[:p] + [delivery] + base[p:]
+
+            if self.is_valid(new_route):
+                return new_route
+        return route[:]
+
+    def is_valid(self, route):
+        if route is None or len(route) != 2*self.n:
+            return False
+
+        seen = [0] * (2*self.n+1)
+        picked = [0] * (self.n+1)
+        load = 0
+
+        for node in route:
+            if node < 1 or node > 2*self.n:
+                return False
+            if seen[node]:
+                return False
+            seen[node] = 1
+
+            if node <= self.n:
+                picked[node] = 1
+                load += 1
+                if load > self.k:
+                    return False
+            else:
+                pickup = node - self.n
+                if not picked[pickup]:
+                    return False
+                load -= 1
+
+        return load == 0
         
     def calc_cost(self, route):
-            if not route: return 0
-            res = self.c[0][route[0]]
-            for i in range(len(route)-1):
-                res += self.c[route[i]][route[i+1]]
-            res += self.c[route[-1]][0]
-            return res
+        if not route: return 0
+        res = self.c[0][route[0]]
+        for i in range(len(route)-1):
+            res += self.c[route[i]][route[i+1]]
+        res += self.c[route[-1]][0]
+        return res
 
     def init_greedy_route(self):
-            picked = [0 for _ in range(2*self.n+1)]
-            load,last,total_cost = 0,0,0
-            path = []
-            onbus = set()
+        picked = [0 for _ in range(2*self.n+1)]
+        load,last,total_cost = 0,0,0
+        path = []
+        onbus = set()
 
-            while len(path) < 2*self.n:
-                candidates = []
-                if load < self.k:
-                    for i in range(1,self.n+1):
-                        if not picked[i]:
-                            candidates.append(i)
-                for i in onbus:
-                    candidates.append(i+self.n)
+        while len(path) < 2*self.n:
+            candidates = []
+            if load < self.k:
+                for i in range(1,self.n+1):
+                    if not picked[i]:
+                        candidates.append(i)
+            for i in onbus:
+                candidates.append(i+self.n)
 
-                nxt = min(candidates, key = lambda x: self.c[last][x])
-                total_cost += self.c[last][nxt]
+            nxt = min(candidates, key = lambda x: self.c[last][x])
+            total_cost += self.c[last][nxt]
 
-                path.append(nxt)
+            path.append(nxt)
 
-                if nxt <= self.n:
-                    picked[nxt] = 1
-                    load += 1
-                    onbus.add(nxt)
-                else:
-                    load -= 1
-                    onbus.remove(nxt-self.n)
-                last = nxt
-            total_cost += self.c[last][0]
+            if nxt <= self.n:
+                picked[nxt] = 1
+                load += 1
+                onbus.add(nxt)
+            else:
+                load -= 1
+                onbus.remove(nxt-self.n)
+            last = nxt
+        total_cost += self.c[last][0]
 
-            return path,total_cost
+        return path,total_cost
 
     def run(self):
         for _ in range(self.generations):
@@ -302,18 +360,18 @@ class GA:
                 break
 
             scored = []
-            for gene in self.population:
-                cost = self.evaluate(gene)
-                scored.append((cost, gene))
+            for route in self.population:
+                cost = self.evaluate(route)
+                scored.append((cost, route))
 
             scored.sort(key=lambda x: x[0])
 
-            cur_best_cost, cur_best_gene = scored[0]
+            cur_best_cost, cur_best_route = scored[0]
             # print(cur_best_cost)
 
             if cur_best_cost < self.best_cost:
                 self.best_cost = cur_best_cost
-                self.best_route = self.decode_gene(cur_best_gene)
+                self.best_route = cur_best_route[:]
 
             new_population = []
 
@@ -336,6 +394,9 @@ class GA:
 
                 if random.random() < self.mutation_rate:
                     child = self.mutate_many(child)
+
+                if not self.is_valid(child):
+                    child = parent1[:]
 
                 new_population.append(child)
 
