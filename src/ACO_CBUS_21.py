@@ -2,13 +2,12 @@ import random
 from math import pow
 from bisect import bisect_left
 
+class Route:
+    def __init__(self, path=None, cost=0):
+        self.path = path if path is not None else []
+        self.cost = cost
 
 class ACO:
-   class Route:
-      def __init__(self, path=None, cost=0):
-          self.path = path if path is not None else []
-          self.cost = cost
-
    def __init__(self, n, k, c):
       random.seed(1)
       self.n = n
@@ -111,7 +110,7 @@ class ACO:
               load -= 1
               onboard.remove(p)
           cur = nextNode
-      return self.Route(path, self.calcCost(path))
+      return Route(path, self.calcCost(path))
 
    def buildAntRoute(self, alpha, beta, q0, pickupCandidateLimit):
       path = []
@@ -208,7 +207,7 @@ class ACO:
               load -= 1
               onboard.remove(p)
           cur = nextNode
-      return self.Route(path, self.calcCost(path))
+      return Route(path, self.calcCost(path))
 
    def depositPheromone(self, path, amount):
       cur = 0
@@ -276,7 +275,7 @@ class ACO:
 
       Q = max(1, self.best.cost)
       for _ in range(iterations):
-          iterationBest = self.Route([], 10 ** 18)
+          iterationBest = Route([], 10 ** 18)
           for __ in range(ants):
 
 
