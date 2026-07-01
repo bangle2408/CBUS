@@ -52,7 +52,7 @@ def solve():
     n, k = map(int, input().split())
     c = [list(map(int, input().split())) for _ in range(2*n+1)]
 
-    n, best_route = Greedy(n, k, c).solve()
+    n, best_route = GREEDY(n, k, c).solve()
     print(n)
     for i in best_route:
         print(i, end=" ")

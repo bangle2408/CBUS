@@ -8,3 +8,5 @@ results/
 .python-version
 __pycache__/
 tmp/
+*.zip
+src/I*
